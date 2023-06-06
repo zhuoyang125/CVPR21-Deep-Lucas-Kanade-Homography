@@ -123,6 +123,7 @@ class data_loader_GoogleMap():
     template_all=[]
     for i in range(batch_size):
      
+     
       img_name=self.img_path[self.start].split('/')[-1]
 
       self.start=self.start+1
@@ -279,44 +280,67 @@ class data_loader_DayNight():
 
     return np.asarray(input_all).astype(np.float32),np.asarray(label_u).astype(np.float32),np.asarray(label_v).astype(np.float32),np.asarray(template_all).astype(np.float32)
 
-'''
+class data_loader_Faces():
+    def __init__(self, dataset_name='train'):
+        if dataset_name == 'train':
+            self.img_path=glob.glob('../Dataset/faces/homography_rgb_train/*')
+            self.input_path='../Dataset/faces/homography_rgb_train/'
+            self.label_path='../Dataset/faces/homography_thr_train_labels/'
+            self.template_path='../Dataset/faces/homography_thr_train_warped/'
+        elif dataset_name == 'val':
+            self.img_path=glob.glob('../Dataset/faces/homography_rgb_val/*')
+            self.input_path='../Dataset/faces/homography_rgb_val/'
+            self.label_path='../Dataset/faces/homography_thr_val_labels/'
+            self.template_path='../Dataset/faces/homography_thr_val_warped/'
+        else:
+            print('no data found')
+        random.shuffle(self.img_path)
+        print('No of images loading: ', len(self.img_path))
+        self.start = 0
 
-A=data_loader_GoogleMap('val')
-A.data_read_batch(1)
+    def channel_norm(self, img):
+        img=np.squeeze(img)
+        for i in range(3):
+            temp_max=np.max(img[:,:,i])
+            temp_min=np.min(img[:,:,i])
+            img[:,:,i] =(img[:,:,i]-temp_min)/(temp_max-temp_min+0.000001)
+        return img
+    
+    def data_read_batch(self, batch_size=8):
+        input_all = []
+        label_u = []
+        label_v = []
+        template_all = []
+        
+        for i in range(batch_size):
+            img_name = self.img_path[self.start].split('/')[-1]
 
+            self.start += 1
+            
+            if self.start > len(self.img_path) - 1:
+                input_all = [0]
+                label_u = [1]
+                label_v = [2]
+                template_all = [3]
+                break
+            
+            input_img = plt.imread(self.input_path + img_name) / 255.0
+			# image name replaces '_1' with '_3' since different modality
+            template_img = plt.imread(self.template_path + img_name) / 255.0
+            template_img = np.expand_dims(template_img, axis=-1) # add extra channel since it's grayscale
+            # check if this is necessary
+            # template_img = self.channel_norm(template_img)
 
+            with open(self.label_path + os.path.splitext(img_name)[0] + '_label.txt', 'r') as outfile:
+                data = json.load(outfile)
+            u_list=[data['location'][0]['top_left_u'],data['location'][1]['top_right_u'],data['location'][3]['bottom_right_u'],data['location'][2]['bottom_left_u']]
+            v_list=[data['location'][0]['top_left_v'],data['location'][1]['top_right_v'],data['location'][3]['bottom_right_v'],data['location'][2]['bottom_left_v']]
+            input_all.append(input_img)
+            label_u.append(u_list)
+            label_v.append(v_list)
+            template_all.append(template_img)
 
-A=data_loader_MSCOCO('val')
-A.data_read_batch(1)
-'''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return np.asarray(input_all).astype(np.float32),np.asarray(label_u).astype(np.float32),np.asarray(label_v).astype(np.float32),np.asarray(template_all).astype(np.float32)
 
 
 

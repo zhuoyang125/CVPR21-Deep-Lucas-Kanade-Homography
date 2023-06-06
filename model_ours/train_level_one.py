@@ -18,8 +18,7 @@ import os
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument('--dataset_name', action="store", dest= "dataset_name",default="GoogleMap",help='MSCOCO,GoogleMap,GoogleEarth,DayNight')
-
+parser.add_argument('--dataset_name', action="store", dest= "dataset_name",default="GoogleMap",help='MSCOCO,GoogleMap,GoogleEarth,DayNight,Faces')
 
 
 parser.add_argument('--learning_rate', action="store", dest="learning_rate", type=float, default=0.00001,help='learning_rate')
@@ -305,7 +304,10 @@ for current_epoch in range(input_parameters.epoch_num):
 
     if input_parameters.dataset_name=='DayNight':
         data_loader_caller=data_loader_DayNight('train')
-        
+	
+    if input_parameters.dataset_name == 'Faces':
+        data_loader_caller = data_loader_Faces('train')
+
 
     optimizer = tf.keras.optimizers.Adam(lr=lr,beta_1=0.9)
 
@@ -442,12 +444,12 @@ for current_epoch in range(input_parameters.epoch_num):
         if iters%100==0 and iters>0:
             
             
-            print(iters)
+            print('current iteration:', iters)
             print (save_path)
 
-            print (error_ave_1000/100)
-            print (ssim_loss_total/100)
-            print (convex_loss_total/100)
+            print ('average error:', error_ave_1000/100)
+            print ('ssim loss:', ssim_loss_total/100)
+            print ('convex loss:', convex_loss_total/100)
             error_ave_1000=0.0
             convex_loss_total=0.0
             ssim_loss_total=0.0
