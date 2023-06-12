@@ -283,15 +283,15 @@ class data_loader_DayNight():
 class data_loader_Faces():
     def __init__(self, dataset_name='train'):
         if dataset_name == 'train':
-            self.img_path=glob.glob('../Dataset/faces/homography_rgb_train/*')
-            self.input_path='../Dataset/faces/homography_rgb_train/'
-            self.label_path='../Dataset/faces/homography_thr_train_labels/'
-            self.template_path='../Dataset/faces/homography_thr_train_warped/'
+            self.img_path=glob.glob('../Dataset/faces/train_rgb_input/*')
+            self.input_path='../Dataset/faces/train_rgb_input/'
+            self.label_path='../Dataset/faces/train_labels/'
+            self.template_path='../Dataset/faces/train_thr_template/'
         elif dataset_name == 'val':
-            self.img_path=glob.glob('../Dataset/faces/homography_rgb_val/*')
-            self.input_path='../Dataset/faces/homography_rgb_val/'
-            self.label_path='../Dataset/faces/homography_thr_val_labels/'
-            self.template_path='../Dataset/faces/homography_thr_val_warped/'
+            self.img_path=glob.glob('../Dataset/faces/val_rgb_input/*')
+            self.input_path='../Dataset/faces/val_rgb_input/'
+            self.label_path='../Dataset/faces/val_labels/'
+            self.template_path='../Dataset/faces/val_thr_template/'
         else:
             print('no data found')
         random.shuffle(self.img_path)

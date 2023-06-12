@@ -47,9 +47,10 @@ gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
   # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
   try:
-    tf.config.experimental.set_virtual_device_configuration(
-        gpus[0],
-        [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=5000)])
+    tf.config.experimental.set_memory_growth(gpus[0], True)
+    #tf.config.experimental.set_virtual_device_configuration(
+    #    gpus[0],
+    #    [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=5000)])
     logical_gpus = tf.config.experimental.list_logical_devices('GPU')
     print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
   except RuntimeError as e:
@@ -263,6 +264,11 @@ def calculate_feature_map(input_tensor):
 
 #level_one_template=ResNet_first_template()
 
+# Create filewriters to save logs for tensorboard
+logdir = 'checkpoints/Faces/level_one/metrics'
+file_writer = tf.summary.create_file_writer(logdir)
+file_writer.set_as_default()
+
 if input_parameters.feature_map_type=='regular':
     level_one_input=ResNet_first_input(if_regular=True)
     level_one_template=ResNet_first_template(if_regular=True)
@@ -287,8 +293,7 @@ LK_layer_one=Lucas_Kanade_layer(batch_size=input_parameters.batch_size,height_te
 
 
 
-
-
+total_iters = 0
 
 for current_epoch in range(input_parameters.epoch_num):
 
@@ -443,7 +448,10 @@ for current_epoch in range(input_parameters.epoch_num):
  
         if iters%100==0 and iters>0:
             
-            
+            total_iters += 100            
+            tf.summary.scalar('average error', data=error_ave_1000/100, step=total_iters)
+            tf.summary.scalar('ssim loss', data=ssim_loss_total/100, step=total_iters)
+            tf.summary.scalar('convex loss', data=convex_loss_total/100, step=total_iters)
             print('current iteration:', iters)
             print (save_path)
 
