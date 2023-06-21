@@ -16,7 +16,7 @@ import os
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument('--dataset_name', action="store", dest= "dataset_name",default="GoogleEarth",help='MSCOCO,GoogleMap,GoogleEarth,DayNight')
+parser.add_argument('--dataset_name', action="store", dest= "dataset_name",default="GoogleEarth",help='MSCOCO,GoogleMap,GoogleEarth,DayNight,Faces')
 
 
 parser.add_argument('--epoch_load_one', action="store", dest="epoch_load_one", type=int, default=10,help='epoch_load_one')
@@ -313,6 +313,9 @@ if input_parameters.dataset_name=='GoogleEarth':
 
 if input_parameters.dataset_name=='DayNight':
     data_loader_caller=data_loader_DayNight('val')
+
+if input_parameters.dataset_name=='Faces':
+    data_loader_caller=data_loader_Faces('val')
         
 if input_parameters.if_LK:
     txt_name=input_parameters.feature_map_type+'_'+input_parameters.initial_type+'_'+input_parameters.dataset_name+".txt"
@@ -338,6 +341,7 @@ for iters in range(10000000):
 
         initial_matrix=initial_motion_COCO()
         initial_matrix=construct_matrix(initial_matrix,scale_factor=0.25,batch_size=1)
+        cornner_error_pre=average_cornner_error(1,initial_matrix,u_list,v_list,top_left_u=0,top_left_v=0,bottom_right_u=127,bottom_right_v=127)
 
 
         '''
@@ -356,7 +360,8 @@ for iters in range(10000000):
     if input_parameters.initial_type=='simple_net':
         input_img_grey=tf.image.rgb_to_grayscale(input_img)
         template_img_new=tf.image.pad_to_bounding_box(template_img, 32, 32, 192, 192)  
-        template_img_grey=tf.image.rgb_to_grayscale(template_img_new)    
+        template_img_grey=template_img_new
+        #template_img_grey=tf.image.rgb_to_grayscale(template_img_new)    
         network_input=tf.concat([template_img_grey,input_img_grey],axis=-1)
         homography_vector=regression_network.call(network_input,training=False)
         extra=tf.ones((1,1))

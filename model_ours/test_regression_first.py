@@ -17,7 +17,7 @@ import os
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument('--dataset_name', action="store", dest= "dataset_name",default="GoogleEarth",help='MSCOCO,GoogleMap,GoogleEarth,DayNight')
+parser.add_argument('--dataset_name', action="store", dest= "dataset_name",default="GoogleEarth",help='MSCOCO,GoogleMap,GoogleEarth,DayNight,Faces')
 
 
 
@@ -145,6 +145,9 @@ if input_parameters.dataset_name=='GoogleEarth':
 
 if input_parameters.dataset_name=='DayNight':
     data_loader_caller=data_loader_DayNight('val')
+
+if input_parameters.dataset_name=='Faces':
+    data_loader_caller=data_loader_Faces('val')
         
 
 total_loss=0.0
@@ -158,7 +161,8 @@ for iters in range(10000000):
     input_img_grey=tf.image.rgb_to_grayscale(input_img)
     template_img_new=tf.image.pad_to_bounding_box(template_img, 32, 32, 192, 192)
         
-    template_img_grey=tf.image.rgb_to_grayscale(template_img_new)
+    #template_img_grey=tf.image.rgb_to_grayscale(template_img_new)
+    template_img_grey = template_img_new
         
     network_input=tf.concat([template_img_grey,input_img_grey],axis=-1)
     with tf.GradientTape() as tape:
@@ -173,6 +177,6 @@ for iters in range(10000000):
         total_loss+=loss_1
 
 
-    print (total_loss/iters)
+    print ('avg total loss:', total_loss/iters)
 
 

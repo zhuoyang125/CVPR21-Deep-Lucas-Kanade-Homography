@@ -18,7 +18,7 @@ import os
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument('--dataset_name', action="store", dest= "dataset_name",default="GoogleMap",help='MSCOCO,GoogleMap,GoogleEarth')
+parser.add_argument('--dataset_name', action="store", dest= "dataset_name",default="GoogleMap",help='MSCOCO,GoogleMap,GoogleEarth,Faces')
 
 
 parser.add_argument('--learning_rate', action="store", dest="learning_rate", type=float, default=0.00001,help='learning_rate')
@@ -51,9 +51,10 @@ gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
   # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
   try:
-    tf.config.experimental.set_virtual_device_configuration(
-        gpus[0],
-        [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=4500)])
+    tf.config.experimental.set_memory_growth(gpus[0], True)
+    #tf.config.experimental.set_virtual_device_configuration(
+    #    gpus[0],
+    #    [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=4500)])
     logical_gpus = tf.config.experimental.list_logical_devices('GPU')
     print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
   except RuntimeError as e:
@@ -298,11 +299,15 @@ LK_layer_two=Lucas_Kanade_layer(batch_size=input_parameters.batch_size,height_te
 
 
 
-
+# create filewriters to save logs for tensorboard
+logdir = 'checkpoints/Faces/level_two/metrics'
+file_writer = tf.summary.create_file_writer(logdir)
+file_writer.set_as_default()
 
 
 #initial_matrix_scaled=construct_matrix(initial_matrix,scale_factor=0.125,batch_size=input_parameters.batch_size)
 
+total_iters = 0
 
 for current_epoch in range(input_parameters.epoch_num):
 
@@ -318,6 +323,9 @@ for current_epoch in range(input_parameters.epoch_num):
 
     if input_parameters.dataset_name=='DayNight':
         data_loader_caller=data_loader_DayNight('train')
+
+    if input_parameters.dataset_name=='Faces':
+        data_loader_caller=data_loader_Faces('train')
         
     optimizer = tf.keras.optimizers.Adam(lr=lr,beta_1=0.9)
 
@@ -467,14 +475,19 @@ for current_epoch in range(input_parameters.epoch_num):
 
  
         if iters%100==0 and iters>0:
-            
+           
+            total_iters += 100
+            tf.summary.scalar('average error', data=error_ave_1000/100, step=total_iters)
+            tf.summary.scalar('ssim loss', data=ssim_loss_total/100, step=total_iters)
+            tf.summary.scalar('convex loss', data=convex_loss_total/100, step=total_iters)
+
             
             print(iters)
             print (save_path)
 
-            print (error_ave_1000/100)
-            print (ssim_loss_total/100)
-            print (convex_loss_total/100)
+            print ('average error:', error_ave_1000/100)
+            print ('ssim loss:', ssim_loss_total/100)
+            print ('convex loss:', convex_loss_total/100)
             error_ave_1000=0.0
             convex_loss_total=0.0
             ssim_loss_total=0.0

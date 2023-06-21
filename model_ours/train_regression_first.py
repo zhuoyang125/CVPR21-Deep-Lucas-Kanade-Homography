@@ -156,7 +156,10 @@ if input_parameters.epoch_start>1:
 
 #LK_layer_one=Lucas_Kanade_layer(batch_size=input_parameters.batch_size,height_template=128,width_template=128,num_channels=1)
 
-
+# create filewriters to save logs to tensorboard
+logdir = 'checkpoints/Faces/regression_stage_1/metrics/'
+file_writer = tf.summary.create_file_writer(logdir)
+file_writer.set_as_default()
 
 for current_epoch in range(input_parameters.epoch_num):
 
@@ -172,6 +175,9 @@ for current_epoch in range(input_parameters.epoch_num):
 
     if input_parameters.dataset_name=='DayNight':
         data_loader_caller=data_loader_DayNight('train')
+
+    if input_parameters.dataset_name=='Faces':
+        data_loader_caller=data_loader_Faces('train')
         
     if current_epoch>0 and current_epoch%input_parameters.epoch_decay==0:
       lr=lr*0.5
@@ -200,7 +206,7 @@ for current_epoch in range(input_parameters.epoch_num):
         
         template_img_new=tf.image.pad_to_bounding_box(template_img, 32, 32, 192, 192)
         
-        template_img_grey=tf.image.rgb_to_grayscale(template_img_new)
+        template_img_grey=template_img_new
         
         network_input=tf.concat([template_img_grey,input_img_grey],axis=-1)
 
@@ -225,13 +231,14 @@ for current_epoch in range(input_parameters.epoch_num):
 
 
         if iters%100==0 and iters>0:
+            tf.summary.scalar('avg total loss:', data=total_loss/100, step=current_epoch)
+            tf.summary.scalar('loss 1:', data=loss_1, step=current_epoch)
             
-            
-            print(iters)
-            print (save_path)
+            print('iters:', iters)
+            print ('save path:', save_path)
 
-            print (total_loss/100)
-            print (loss_1)
+            print ('avg total loss:', total_loss/100)
+            print ('loss 1:', loss_1)
 
             total_loss=0.0
 
