@@ -158,7 +158,8 @@ for iters in range(10000000):
     if len(np.shape(input_img))<2:
          break
 
-    input_img_grey=tf.image.rgb_to_grayscale(input_img)
+    #input_img_grey=tf.image.rgb_to_grayscale(input_img)
+    input_img_grey=input_img
     template_img_new=tf.image.pad_to_bounding_box(template_img, 32, 32, 192, 192)
         
     #template_img_grey=tf.image.rgb_to_grayscale(template_img_new)

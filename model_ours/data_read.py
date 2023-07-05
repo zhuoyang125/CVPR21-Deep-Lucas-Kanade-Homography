@@ -300,10 +300,15 @@ class data_loader_Faces():
 
     def channel_norm(self, img):
         img=np.squeeze(img)
-        for i in range(3):
-            temp_max=np.max(img[:,:,i])
-            temp_min=np.min(img[:,:,i])
-            img[:,:,i] =(img[:,:,i]-temp_min)/(temp_max-temp_min+0.000001)
+        temp_max = np.max(img[:, :])
+        temp_min = np.min(img[:, :])
+        img[:,:] = (img[:,:]-temp_min)/(temp_max-temp_min+0.000001)
+        temp_max = np.max(img[:, :])
+        #Normalising rgb images
+        #for i in range(3):
+        #    temp_max=np.max(img[:,:,i])
+        #    temp_min=np.min(img[:,:,i])
+        #    img[:,:,i] =(img[:,:,i]-temp_min)/(temp_max-temp_min+0.000001)
         return img
     
     def data_read_batch(self, batch_size=8):
@@ -325,11 +330,14 @@ class data_loader_Faces():
                 break
             
             input_img = plt.imread(self.input_path + img_name) / 255.0
+            input_img = cv2.cvtColor(input_img, cv2.COLOR_RGB2GRAY)
 			# image name replaces '_1' with '_3' since different modality
             template_img = plt.imread(self.template_path + img_name) / 255.0
-            template_img = np.expand_dims(template_img, axis=-1) # add extra channel since it's grayscale
             # check if this is necessary
-            # template_img = self.channel_norm(template_img)
+            input_img = self.channel_norm(input_img)
+            template_img = self.channel_norm(template_img)
+            input_img = np.expand_dims(input_img, axis=-1)
+            template_img = np.expand_dims(template_img, axis=-1) # add extra channel since it's grayscale
 
             with open(self.label_path + os.path.splitext(img_name)[0] + '_label.txt', 'r') as outfile:
                 data = json.load(outfile)

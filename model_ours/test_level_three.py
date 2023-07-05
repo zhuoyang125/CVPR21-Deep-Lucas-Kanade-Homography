@@ -12,7 +12,6 @@ import os
 
 
 
-
 parser = argparse.ArgumentParser()
 
 
@@ -331,6 +330,8 @@ inference_time_initial=0.0
 inference_time_siamese=0.0
 inference_time_LK=0.0
 
+f = open('corner_errors.txt', 'w')
+
 
 for iters in range(10000000):
     input_img,u_list,v_list,template_img=data_loader_caller.data_read_batch(batch_size=1)
@@ -358,7 +359,8 @@ for iters in range(10000000):
 
 
     if input_parameters.initial_type=='simple_net':
-        input_img_grey=tf.image.rgb_to_grayscale(input_img)
+        #input_img_grey=tf.image.rgb_to_grayscale(input_img)
+        input_img_grey = input_img
         template_img_new=tf.image.pad_to_bounding_box(template_img, 32, 32, 192, 192)  
         template_img_grey=template_img_new
         #template_img_grey=tf.image.rgb_to_grayscale(template_img_new)    
@@ -498,13 +500,15 @@ for iters in range(10000000):
         total_error+=1
     print (inference_time_LK/(iters+1))
     print (iters)
-    print (total_error/(iters+1))
-    print (cornner_error)
+    print ('total error:', total_error/(iters+1))
+    print ('cornner_error:', cornner_error)
+    f.write(str(np.float(cornner_error)))
+    f.write('\n')
 
     #file.write(str(np.float(cornner_error)))
     #file.write('\n')
 
-
+f.close()
 #file.close()
             
             

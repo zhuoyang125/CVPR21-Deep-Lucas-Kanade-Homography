@@ -166,18 +166,24 @@ for current_epoch in range(input_parameters.epoch_num):
 
     if input_parameters.dataset_name=='MSCOCO':
         data_loader_caller=data_loader_MSCOCO('train')
+        data_loader_val_caller = data_loader_MSCOCO('val')
 
     if input_parameters.dataset_name=='GoogleMap':
         data_loader_caller=data_loader_GoogleMap('train')
+        data_loader_val_caller = data_loader_GoogleMap('val')
 
     if input_parameters.dataset_name=='GoogleEarth':
         data_loader_caller=data_loader_GoogleEarth('train')
+        data_loader_val_caller = data_loader_GoogleEarth('val')
 
     if input_parameters.dataset_name=='DayNight':
         data_loader_caller=data_loader_DayNight('train')
+        data_loader_val_caller = data_loader_DayNight('val')
 
     if input_parameters.dataset_name=='Faces':
         data_loader_caller=data_loader_Faces('train')
+        data_loader_val_caller = data_loader_Faces('val')
+
         
     if current_epoch>0 and current_epoch%input_parameters.epoch_decay==0:
       lr=lr*0.5
@@ -202,7 +208,8 @@ for current_epoch in range(input_parameters.epoch_num):
         template_img_grey=tf.image.rgb_to_grayscale(template_img)
         network_input=tf.concat([template_img_grey,input_img_grey],axis=-1)
         '''
-        input_img_grey=tf.image.rgb_to_grayscale(input_img)
+        #input_img_grey=tf.image.rgb_to_grayscale(input_img)
+        input_img_grey=input_img
         
         template_img_new=tf.image.pad_to_bounding_box(template_img, 32, 32, 192, 192)
         
@@ -231,11 +238,11 @@ for current_epoch in range(input_parameters.epoch_num):
 
 
         if iters%100==0 and iters>0:
+            
             tf.summary.scalar('avg total loss:', data=total_loss/100, step=current_epoch)
             tf.summary.scalar('loss 1:', data=loss_1, step=current_epoch)
-            
             print('iters:', iters)
-            print ('save path:', save_path)
+            #print ('save path:', save_path)
 
             print ('avg total loss:', total_loss/100)
             print ('loss 1:', loss_1)
@@ -246,4 +253,6 @@ for current_epoch in range(input_parameters.epoch_num):
         if iters%input_parameters.save_eval_f==0 and iters>0:
 
             regression_network.save_weights(save_path +'epoch_'+str(input_parameters.epoch_start+current_epoch)+str(iters))
+
+
             
